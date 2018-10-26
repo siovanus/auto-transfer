@@ -1,0 +1,7 @@
+{
+  "JsonRpcAddress":"http://139.219.128.220:20336",
+  "DataFile": "./result.txt",
+  "WalletFile":"./wallet.dat",
+  "GasPrice":0,
+  "GasLimit":20000
+}
