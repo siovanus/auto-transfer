@@ -18,20 +18,28 @@
 package main
 
 import (
-	"fmt"
 	"bufio"
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
+	"math/big"
 
 	"github.com/ontio/auto-transfer/common"
-	ocommon "github.com/ontio/ontology/common"
 	sdk "github.com/ontio/ontology-go-sdk"
+	ocommon "github.com/ontio/ontology/common"
 	"github.com/ontio/ontology/smartcontract/service/native/ont"
-	"math/big"
 )
 
-const BONUS = 10000000000000000
+var pubkeys = []string{
+	"022bf80145bd448d993abffa237f4cd06d9df13eaad37afce5cb71d80c47b03feb",
+	"03c8f63775536eb420c96228cdccc9de7d80e87f1b562a6eb93c0838064350aa53",
+	"02bcdd278a27e4969d48de95d6b7b086b65b8d1d4ff6509e7a9eab364a76115af7",
+	"0251f06bc247b1da94ec7d9fe25f5f913cedaecba8524140353b826cf9b1cbd9f4",
+	"0253719ac66d7cafa1fe49a64f73bd864a346da92d908c19577a003a8a4160b7fa",
+	"02765d98bb092962734e365bd436bdc80c5b5991dcf22b28dbb02d3b3cf74d6444",
+	"022e911fb5a20b4b2e4f917f10eb92f27d17cad16b916bce8fd2dd8c11ac2878c0",
+}
 
 type Result struct {
 	PeerPubkey string `json:"peer_pubkey"`
@@ -86,25 +94,42 @@ func main() {
 		}
 	}
 
+	f, err := os.Create("record.txt")
+	if err != nil {
+		fmt.Println("Error os.Create: ", err)
+		return
+	}
+	defer f.Close()
+	w := bufio.NewWriter(f)
+
 	var sum uint64 = 0
 	for _, record := range data {
-		share := new(big.Int).SetUint64(record.Value)
-		bonus := new(big.Int).SetUint64(uint64(BONUS))
-		total := new(big.Int).SetUint64(peerSum[record.PeerPubkey])
-		amount := new(big.Int).Div(new(big.Int).Mul(share, bonus),total)
-		address, err := ocommon.AddressFromBase58(record.Address)
-		if err != nil {
-			fmt.Println("ocommon.AddressFromBase58 error")
-			return
+		if inList(record.PeerPubkey, pubkeys) {
+			share := new(big.Int).SetUint64(record.Value)
+			bonus := new(big.Int).SetUint64(common.DefConfig.Bonus)
+			total := new(big.Int).SetUint64(peerSum[record.PeerPubkey])
+			if total.Cmp(new(big.Int)) == 0 {
+				continue
+			}
+			amount := new(big.Int).Div(new(big.Int).Mul(share, bonus), total)
+			address, err := ocommon.AddressFromBase58(record.Address)
+			if err != nil {
+				fmt.Println("ocommon.AddressFromBase58 error")
+				return
+			}
+			sts = append(sts, &ont.State{
+				From:  user.Address,
+				To:    address,
+				Value: amount.Uint64(),
+			})
+			w.WriteString(address.ToBase58() + "\t" + amount.String())
+			w.WriteString("\n")
+			sum += amount.Uint64()
 		}
-		sts = append(sts, &ont.State{
-			From:  user.Address,
-			To:    address,
-			Value: amount.Uint64(),
-		})
-		sum += amount.Uint64()
 	}
-	if sum > BONUS {
+	w.Flush()
+
+	if sum > 7*common.DefConfig.Bonus {
 		fmt.Println("error, sum of split is more than total bonus")
 		return
 	}
@@ -114,4 +139,14 @@ func main() {
 		return
 	}
 	fmt.Println("tx success, txHash is :", txHash.ToHexString())
+}
+
+func inList(item string, list []string) bool {
+	result := false
+	for _, i := range list {
+		if item == i {
+			result = true
+		}
+	}
+	return result
 }
