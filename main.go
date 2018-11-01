@@ -22,9 +22,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"os"
 	"math/big"
+	"os"
 
+	"encoding/hex"
 	"github.com/ontio/auto-transfer/common"
 	sdk "github.com/ontio/ontology-go-sdk"
 	ocommon "github.com/ontio/ontology/common"
@@ -105,13 +106,17 @@ func main() {
 	var sum uint64 = 0
 	for _, record := range data {
 		if inList(record.PeerPubkey, pubkeys) {
+			_, ok := peerSum[record.PeerPubkey]
+			if !ok {
+				continue
+			}
 			share := new(big.Int).SetUint64(record.Value)
 			bonus := new(big.Int).SetUint64(common.DefConfig.Bonus)
 			total := new(big.Int).SetUint64(peerSum[record.PeerPubkey])
+			amount := new(big.Int).Div(new(big.Int).Mul(share, bonus), total)
 			if total.Cmp(new(big.Int)) == 0 {
 				continue
 			}
-			amount := new(big.Int).Div(new(big.Int).Mul(share, bonus), total)
 			address, err := ocommon.AddressFromBase58(record.Address)
 			if err != nil {
 				fmt.Println("ocommon.AddressFromBase58 error")
@@ -133,12 +138,44 @@ func main() {
 		fmt.Println("error, sum of split is more than total bonus")
 		return
 	}
-	txHash, err := ontSdk.Native.Ong.MultiTransfer(common.DefConfig.GasPrice, common.DefConfig.GasLimit, sts, user)
-	if err != nil {
-		fmt.Println("invokeNativeContract error :", err)
-		return
+
+	n := len(sts) / 500
+	for i := 0; i <= n; i++ {
+		states := sts[i*500:(i+1)*500]
+		if i == n {
+			states = sts[i*500:]
+		}
+		fmt.Println(len(states))
+		tx, err := ontSdk.Native.Ong.NewMultiTransferTransaction(common.DefConfig.GasPrice, common.DefConfig.GasLimit, states)
+		if err != nil {
+			fmt.Println("ontSdk.Native.Ong.NewMultiTransferTransaction error :", err)
+			return
+		}
+		err = ontSdk.SignToTransaction(tx, user)
+		if err != nil {
+			fmt.Println("ontSdk.SignToTransaction error :", err)
+			return
+		}
+		transaction, err := tx.IntoImmutable()
+		if err != nil {
+			fmt.Println("tx.IntoImmutable error :", err)
+			return
+		}
+		f2, err := os.Create(fmt.Sprintf("transaction%d.txt", i))
+		if err != nil {
+			fmt.Println("ontSdk.Native.Ong.NewMultiTransferTransaction error :", err)
+			return
+		}
+		w2 := bufio.NewWriter(f2)
+		w2.WriteString(hex.EncodeToString(transaction.ToArray()))
+		txHash, err := ontSdk.SendTransaction(tx)
+		if err != nil {
+			fmt.Println("ontSdk.SendTransaction error :", err)
+			return
+		}
+		fmt.Println("tx success, txHash is :", txHash.ToHexString())
+		f2.Close()
 	}
-	fmt.Println("tx success, txHash is :", txHash.ToHexString())
 }
 
 func inList(item string, list []string) bool {
