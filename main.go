@@ -30,6 +30,7 @@ import (
 	sdk "github.com/ontio/ontology-go-sdk"
 	ocommon "github.com/ontio/ontology/common"
 	"github.com/ontio/ontology/smartcontract/service/native/ont"
+	"github.com/ontio/ontology/core/types"
 )
 
 var pubkeys = []string{
@@ -168,6 +169,7 @@ func main() {
 		}
 		w2 := bufio.NewWriter(f2)
 		w2.WriteString(hex.EncodeToString(transaction.ToArray()))
+		w2.Flush()
 		//txHash, err := ontSdk.SendTransaction(tx)
 		//if err != nil {
 		//	fmt.Println("ontSdk.SendTransaction error :", err)
