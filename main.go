@@ -168,12 +168,12 @@ func main() {
 		}
 		w2 := bufio.NewWriter(f2)
 		w2.WriteString(hex.EncodeToString(transaction.ToArray()))
-		txHash, err := ontSdk.SendTransaction(tx)
-		if err != nil {
-			fmt.Println("ontSdk.SendTransaction error :", err)
-			return
-		}
-		fmt.Println("tx success, txHash is :", txHash.ToHexString())
+		//txHash, err := ontSdk.SendTransaction(tx)
+		//if err != nil {
+		//	fmt.Println("ontSdk.SendTransaction error :", err)
+		//	return
+		//}
+		//fmt.Println("tx success, txHash is :", txHash.ToHexString())
 		f2.Close()
 	}
 }
