@@ -24,13 +24,12 @@ import (
 	"io"
 	"math/big"
 	"os"
-
 	"encoding/hex"
+
 	"github.com/ontio/auto-transfer/common"
 	sdk "github.com/ontio/ontology-go-sdk"
 	ocommon "github.com/ontio/ontology/common"
 	"github.com/ontio/ontology/smartcontract/service/native/ont"
-	"github.com/ontio/ontology/core/types"
 )
 
 var pubkeys = []string{
@@ -142,7 +141,7 @@ func main() {
 
 	n := len(sts) / 500
 	for i := 0; i <= n; i++ {
-		states := sts[i*500:(i+1)*500]
+		states := sts[i*500 : (i+1)*500]
 		if i == n {
 			states = sts[i*500:]
 		}
