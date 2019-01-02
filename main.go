@@ -19,12 +19,12 @@ package main
 
 import (
 	"bufio"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
 	"math/big"
 	"os"
-	"encoding/hex"
 
 	"github.com/ontio/auto-transfer/common"
 	sdk "github.com/ontio/ontology-go-sdk"
@@ -139,10 +139,12 @@ func main() {
 		return
 	}
 
-	n := len(sts) / 500
-	for i := 0; i <= n; i++ {
-		states := sts[i*500 : (i+1)*500]
-		if i == n {
+	n := (len(sts) + 499) / 500
+	for i := 0; i < n; i++ {
+		states := sts[:0]
+		if i < (n - 1) {
+			states = sts[i*500 : (i+1)*500]
+		} else {
 			states = sts[i*500:]
 		}
 		fmt.Println(len(states))
