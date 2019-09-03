@@ -1,8 +1,6 @@
 {
-  "JsonRpcAddress":"http://dappnode1.ont.io:20336",
-  "DataFile": "./result.txt",
+  "JsonRpcAddress":"http://polaris1.ont.io:20336",
   "WalletFile":"./wallet.dat",
-  "Bonus": 25252525252525,
-  "GasPrice":0,
+  "GasPrice":500,
   "GasLimit":20000
 }

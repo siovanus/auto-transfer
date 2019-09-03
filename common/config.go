@@ -33,12 +33,8 @@ var DefConfig = NewTestConfig()
 type TestConfig struct {
 	//JsonRpcAddress of ontology
 	JsonRpcAddress string
-	//Data file path
-	DataFile string
 	//WalletFile of test
 	WalletFile string
-	//Bonus amount each node
-	Bonus uint64
 	//Gas Price of transaction
 	GasPrice uint64
 	//Gas Limit of invoke transaction
