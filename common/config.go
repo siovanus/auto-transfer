@@ -35,6 +35,7 @@ type TestConfig struct {
 	JsonRpcAddress string
 	//WalletFile of test
 	WalletFile string
+	Tps        uint64
 	//Gas Price of transaction
 	GasPrice uint64
 	//Gas Limit of invoke transaction

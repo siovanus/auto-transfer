@@ -1,6 +1,7 @@
 {
   "JsonRpcAddress":"http://polaris1.ont.io:20336",
   "WalletFile":"./wallet.dat",
+  "Tps": 5,
   "GasPrice":500,
   "GasLimit":20000
 }

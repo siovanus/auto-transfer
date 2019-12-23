@@ -39,12 +39,13 @@ func main() {
 		return
 	}
 
+	interval := 1000 / common.DefConfig.Tps
 	for {
-		txHash, err := ontSdk.Native.Ont.Transfer(common.DefConfig.GasPrice, common.DefConfig.GasLimit, user, user.Address, 10)
+		txHash, err := ontSdk.Native.Ont.Transfer(common.DefConfig.GasPrice, common.DefConfig.GasLimit, user, user, user.Address, 10)
 		if err != nil {
 			fmt.Println("transfer error:", err)
 		}
 		fmt.Println("txHash is:", txHash.ToHexString())
-		time.Sleep(1*time.Second)
+		time.Sleep(time.Duration(interval) * time.Millisecond)
 	}
 }
